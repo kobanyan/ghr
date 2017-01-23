@@ -68,8 +68,8 @@ function ghr
         echo "Options:"
         echo " -h, --help             This help text"
         echo " -n, --name NAME        Save binary as NAME"
-        echo " -r, --repo REPO        Github repository like 'user/repo'"
-        echo " -v, --version VERSION  Use 'latest' if empty."
+        echo " -r, --repo REPO        Github repository 'owner/repo'"
+        echo " -v, --version VERSION  Download taget VERSION. Use 'latest' if empty."
         return
       case \*
         echo "'$_key' is not a valid option" > /dev/stderr
