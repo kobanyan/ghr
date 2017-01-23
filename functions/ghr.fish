@@ -87,7 +87,6 @@ function ghr
   # resolve endpoint
   set -l _api_endpoint "https://api.github.com/repos/$_repo/releases/$_version"
   set -l _api_json "$GHR_TEMP/$_repo/$_version.json"
-  echo $_api_json
   spin "curl -sLo $_api_json $_api_endpoint --create-dir";
     or return 1
   set -l _artifact_endpoint (__resolve_artifact_endpoint "$_api_json")
