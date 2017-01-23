@@ -64,18 +64,23 @@ function ghr
       case "n" "name"
         set _name "$_value"
       case "h" "help"
-        set _show_help true
+        echo "Usage: ghr [-r repo] [-v version] [-n name]"
+        echo "Options:"
+        echo " -h, --help             This help text"
+        echo " -n, --name NAME        Save binary as NAME"
+        echo " -r, --repo REPO        Github repository like 'user/repo'"
+        echo " -v, --version VERSION  Use 'latest' if empty."
+        return
+      case \*
+        echo "'$_key' is not a valid option" > /dev/stderr
+        ghr -h > /dev/stderr
+        return 1
     end
   end
-  if test -z "$_repo" -o -n "$_show_help";
-    echo "Usage: ghr [-r repo] [-v version] [-n name]"
-    echo "Options:"
-    echo " -h, --help             This help text"
-    echo " -n, --name NAME        Save binary as NAME"
-    echo " -r, --repo REPO        Github repository like 'user/repo'"
-    echo " -v, --version VERSION  Use 'latest' if empty."
-    return 1
-  end
+  test -z "$_repo";
+    and echo "'-r, --repo' is required option" > /dev/stderr;
+    and ghr -h > /dev/stderr;
+    and return 1
   test -z "$_name"; and set _name (string split "/" "$_repo")[-1]
   test -z "$_version"; and set _version "latest"
 
