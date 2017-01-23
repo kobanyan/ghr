@@ -12,7 +12,7 @@ function ghr
     # TODO cover other patterns
     set -l _os
     if test (uname) = "Darwin"
-      set _os "darwin"
+      set _os "(darwin|osx)"
     else
       set _os "linux"
     end
