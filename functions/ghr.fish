@@ -87,7 +87,7 @@ function ghr
   # resolve endpoint
   set -l _api_endpoint "https://api.github.com/repos/$_repo/releases/$_version"
   set -l _api_json "$GHR_TEMP/$_repo/$_version.json"
-  spin "curl -sLo $_api_json $_api_endpoint --create-dir";
+  spin "curl -sSLo $_api_json $_api_endpoint --create-dir";
     or return 1
   set -l _artifact_endpoint (__resolve_artifact_endpoint "$_api_json")
   test -z "$_artifact_endpoint";
@@ -103,7 +103,7 @@ function ghr
 
   # download artifact
   set -l _artifact "$GHR_TEMP/"(string split "/" $_artifact_endpoint)[-1]
-  spin "curl -sL -o $_artifact $_artifact_endpoint";
+  spin "curl -sSLo $_artifact $_artifact_endpoint";
     or return 1
 
   # unarchive
