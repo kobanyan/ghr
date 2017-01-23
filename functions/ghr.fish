@@ -22,7 +22,7 @@ function ghr
   function __machine_pattern
     # TODO cover other patterns
     set -l _machine
-    if test (uname) = "x86_64"
+    if test (uname -m) = "x86_64"
       set _machine "64"
     else
       set _machine "386"
