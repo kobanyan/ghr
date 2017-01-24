@@ -113,33 +113,30 @@ function ghr
     or return 1
 
   # unarchive
-  set -l _dir_name (string split -r -m1 . "$_artifact")[1]
-  if not string match -r "^$GHR_TEMP" "$_dir_name" >/dev/null 2>&1;
-    echo "Illegal dir_name. $_dir_name"
-    return 1
-  end
-  rm -rf $_dir_name
-  mkdir -p $_dir_name
-  switch $_artifact
-    case "*.zip"
-      unzip "$_artifact" -d "$_dir_name" >/dev/null
-      rm -rf "$_artifact"
-    case "*.tar.gz" "*.tgz"
-      tar xvf "$_artifact" -C "$_dir_name" >/dev/null
-      rm -rf "$_artifact"
-    # TODO cover other extensions
-    case "*"
-      echo "Unknown archive type. $_artifact"
-      return 1
+  set -l _dir_name "$GHR_TEMP/"(string split -m1 "." (string split -r -m1 "/" "$_artifact")[2])[1]
+  set -l _binary
+  if test "$_dir_name" != "$_artifact"
+    rm -rf $_dir_name
+    mkdir -p $_dir_name
+    switch $_artifact
+      case "*.zip"
+        unzip "$_artifact" -d "$_dir_name" >/dev/null
+        rm -rf "$_artifact"
+      case "*.tar.gz" "*.tgz"
+        tar xvf "$_artifact" -C "$_dir_name" >/dev/null
+        rm -rf "$_artifact"
+    end
+    # resolve binary
+    set _binary (file $_dir_name/** | awk -F: '$2 ~ /executable/{print $1}')[1] # use first binary
+  else
+    # artifact which does not have extension is binary
+    set _binary "$_artifact"
   end
 
-  # resolve binary
-  set -l _binary (file $_dir_name/** | awk -F: '$2 ~ /executable/{print $1}')[1] # use first binary
+  # enable to exec
   test -z "$_binary";
     and echo "Not found binary file in $_dir_name";
     and return 1
-
-  # enable to exec
   mv "$_binary" "$GHR_BIN/$_name"
   chmod 755 "$GHR_BIN/$_name"
 
