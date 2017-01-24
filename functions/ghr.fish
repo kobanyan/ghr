@@ -1,4 +1,4 @@
-function ghr
+function ghr -d "Install form Github releases"
   function __is_cached -a _repo _version _name
     test -f "$GHR_CACHE"; or touch "$GHR_CACHE"
     if string match -r "^$_repo\t$_version\t$_name" < "$GHR_CACHE" >/dev/null;
