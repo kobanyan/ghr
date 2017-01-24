@@ -83,6 +83,7 @@ function ghr
     and return 1
   test -z "$_name"; and set _name (string split "/" "$_repo")[-1]
   test -z "$_version"; and set _version "latest"
+  test -n "$GHR_TOKEN"; and set -l _api_token "-u ghr:$GHR_TOKEN"
 
   # check if cached when version is specified
   test "$_version" != "latest";
@@ -92,7 +93,7 @@ function ghr
   # resolve endpoint
   set -l _api_endpoint "https://api.github.com/repos/$_repo/releases/$_version"
   set -l _api_json "$GHR_TEMP/$_repo/$_version.json"
-  spin -f " @ Downloading $_api_endpoint\r" "curl -sSLo $_api_json $_api_endpoint --create-dir";
+  spin -f " @ Downloading $_api_endpoint\r" "curl -sSLo $_api_json $_api_token $_api_endpoint --create-dir";
     or return 1
   set -l _artifact_endpoint (__resolve_artifact_endpoint "$_api_json")
   test -z "$_artifact_endpoint";
@@ -108,7 +109,7 @@ function ghr
 
   # download artifact
   set -l _artifact "$GHR_TEMP/"(string split "/" $_artifact_endpoint)[-1]
-  spin -f " @ Downloading $_artifact_endpoint\r" "curl -sSLo $_artifact $_artifact_endpoint";
+  spin -f " @ Downloading $_artifact_endpoint\r" "curl -sSLo $_artifact $_api_token $_artifact_endpoint";
     or return 1
 
   # unarchive
