@@ -91,7 +91,10 @@ function ghr -d "Install form Github releases"
       and return 0
 
   # resolve endpoint
-  set -l _api_endpoint "https://api.github.com/repos/$_repo/releases/$_version"
+  set -l _api_endpoint
+  test "$_version" = "latest";
+    and set _api_endpoint "https://api.github.com/repos/$_repo/releases/latest";
+    or set _api_endpoint "https://api.github.com/repos/$_repo/releases/tags/$_version"
   set -l _api_json "$GHR_TEMP/$_repo/$_version.json"
   spin -f " @ Downloading $_api_endpoint\r" "curl -sSLo $_api_json $_api_token $_api_endpoint --create-dir";
     or return 1
