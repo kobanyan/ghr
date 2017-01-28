@@ -1,7 +1,7 @@
 function ghr -d "Install form Github releases"
-  function __is_cached -a _repo _version _name
+  function __is_cached -a _repo _tag _name
     test -f "$GHR_CACHE"; or touch "$GHR_CACHE"
-    if string match -r "^$_repo\t$_version\t$_name" < "$GHR_CACHE" >/dev/null;
+    if string match -r "^$_repo\t$_tag\t$_name" < "$GHR_CACHE" >/dev/null;
       return 0
     else
       return 1
@@ -40,36 +40,36 @@ function ghr -d "Install form Github releases"
       | string trim -lr --chars '"'
   end
 
-  function __resolve_real_version -a _json_file _version
-    test "$_version" = "latest";\
+  function __resolve_real_tag -a _json_file _tag
+    test "$_tag" = "latest";\
       and echo (cat "$_json_file"\
         | string match -r '".*tag_name.*"'\
         | string trim -lr\
         | string trim --chars '"tag_name": '\
         | string trim -lr --chars '"');
-      or echo "$_version"
+      or echo "$_tag"
   end
 
   # resolve arguments
   set -l _repo
-  set -l _version
+  set -l _tag
   set -l _name
   set -l _show_help
   getopts $argv | while read -l _key _value
     switch $_key
       case "r" "repo"
         set _repo "$_value"
-      case "v" "version"
-        set _version "$_value"
+      case "t" "tag"
+        set _tag "$_value"
       case "n" "name"
         set _name "$_value"
       case "h" "help"
-        echo "Usage: ghr [-r repo] [-v version] [-n name]"
+        echo "Usage: ghr [-r repo] [-t tag] [-n name]"
         echo "Options:"
         echo " -h, --help             This help text"
         echo " -n, --name NAME        Save binary as NAME"
         echo " -r, --repo REPO        Github repository 'owner/repo'"
-        echo " -v, --version VERSION  Download taget VERSION. Use 'latest' if empty."
+        echo " -t, --tag TAG          Download from TAG"
         return
       case \*
         echo "'$_key' is not a valid option" > /dev/stderr
@@ -82,20 +82,20 @@ function ghr -d "Install form Github releases"
     and ghr -h > /dev/stderr;
     and return 1
   test -z "$_name"; and set _name (string split "/" "$_repo")[-1]
-  test -z "$_version"; and set _version "latest"
+  test -z "$_tag"; and set _tag "latest"
   test -n "$GHR_TOKEN"; and set -l _api_token "-u ghr:$GHR_TOKEN"
 
-  # check if cached when version is specified
-  test "$_version" != "latest";
-    and __is_cached "$_repo" "$_version" "$_name";
+  # check if cached when tag is specified
+  test "$_tag" != "latest";
+    and __is_cached "$_repo" "$_tag" "$_name";
       and return 0
 
   # resolve endpoint
   set -l _api_endpoint
-  test "$_version" = "latest";
+  test "$_tag" = "latest";
     and set _api_endpoint "https://api.github.com/repos/$_repo/releases/latest";
-    or set _api_endpoint "https://api.github.com/repos/$_repo/releases/tags/$_version"
-  set -l _api_json "$GHR_TEMP/$_repo/$_version.json"
+    or set _api_endpoint "https://api.github.com/repos/$_repo/releases/tags/$_tag"
+  set -l _api_json "$GHR_TEMP/$_repo/$_tag.json"
   spin -f " @ Downloading $_api_endpoint\r" "curl -sSLo $_api_json $_api_token $_api_endpoint --create-dir";
     or return 1
   set -l _artifact_endpoint (__resolve_artifact_endpoint "$_api_json")
@@ -103,11 +103,11 @@ function ghr -d "Install form Github releases"
     and echo "Not found repository. $_repo";
     and return 1
 
-  # resolve real version
-  set -l _real_version (__resolve_real_version "$_api_json" "$_version")
+  # resolve real tag
+  set -l _real_tag (__resolve_real_tag "$_api_json" "$_tag")
 
   # check if cached
-  __is_cached "$_repo" "$_real_version" "$_name";
+  __is_cached "$_repo" "$_real_tag" "$_name";
     and return 0
 
   # download artifact
@@ -144,6 +144,6 @@ function ghr -d "Install form Github releases"
   chmod 755 "$GHR_BIN/$_name"
 
   # post process
-  echo $_repo\t$_real_version\t$_name >> $GHR_CACHE
+  echo $_repo\t$_real_tag\t$_name >> $GHR_CACHE
   rm -rf "$_dir_name"
 end

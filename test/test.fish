@@ -10,12 +10,12 @@ function __error -a message
   set errors (math $errors + 1)
 end
 
-function __installed -a binary version
+function __installed -a binary tag
   set tests (math $tests + 1)
   if type $binary >/dev/null 2>&1;
-    if test -n "$version";
-       string match -r ".*$version.*" (eval $binary --version);
-          or __error "Not installed $binary - $version"
+    if test -n "$tag";
+       string match -r ".*$tag.*" (eval $binary --version);
+          or __error "Not installed $binary - $tag"
     end
   else
     __error "Not installed $binary."
@@ -27,7 +27,7 @@ echo Started
 ghr -r junegunn/fzf-bin -n fzf
 __installed fzf
 
-ghr -r junegunn/fzf-bin -v 0.16.2
+ghr -r junegunn/fzf-bin -t 0.16.2
 __installed fzf-bin 0.16.2
 
 ghr -r peco/peco
