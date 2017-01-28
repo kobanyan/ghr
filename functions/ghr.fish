@@ -56,19 +56,25 @@ function ghr -d "Install form Github releases"
   set -l name
   getopts $argv | while read -l key value
     switch $key
-      case "r" "repo"
+      case "_" "repo"
         set repo "$value"
       case "t" "tag"
         set tag "$value"
       case "n" "name"
         set name "$value"
       case "h" "help"
-        echo "Usage: ghr [-r repo] [-t tag] [-n name]"
+        echo "Usage: ghr [-t tag] [-n name] <repo>"
         echo "Options:"
-        echo " -h, --help             This help text"
-        echo " -n, --name NAME        Save binary as NAME"
-        echo " -r, --repo REPO        Github repository 'owner/repo'"
-        echo " -t, --tag TAG          Download from TAG"
+        echo " -h, --help       This help text"
+        echo " -n, --name NAME  Save binary as NAME"
+        echo " -t, --tag TAG    Download from TAG"
+        echo "Usage:"
+        echo " Install latest version"
+        echo "  ghr peco/peco"
+        echo " Install as alias"
+        echo "  ghr -n fzf junegunn/fzf-bin"
+        echo " Install from specified tag"
+        echo "  ghr -t jq-1.5rc2 stedolan/jq"
         return
       case \*
         echo "'$key' is not a valid option" > /dev/stderr
@@ -77,7 +83,6 @@ function ghr -d "Install form Github releases"
     end
   end
   test -z "$repo";
-    and echo "'-r, --repo' is required option" > /dev/stderr;
     and ghr -h > /dev/stderr;
     and return 1
   test -z "$name"; and set name (string split "/" "$repo")[-1]

@@ -10,34 +10,50 @@ function __error -a message
   set errors (math $errors + 1)
 end
 
-function __installed -a binary tag
+function __shoud_not_be_installed -a binary
+end
+
+function __should_be_installed -a binary tag
+end
+
+function __test -a repo tag name
+  echo ------
   set tests (math $tests + 1)
+  set -l binary $name
+  test -z "$binary"; and set binary (string split "/" $repo)[-1]
+  if type $binary >/dev/null 2>&1;
+    __error "$binary should not be installed"
+    return 1
+  end
+  set -l options $repo
+  test -n "$tag"; and set options $options -t $tag
+  test -n "$name"; and set options $options -n $name
+  echo ghr $options
+  ghr $options
   if type $binary >/dev/null 2>&1;
     if test -n "$tag";
-       string match -r ".*$tag.*" (eval $binary --version);
-          or __error "Not installed $binary - $tag"
+      if not string match -r ".*$tag.*" (eval $binary --version);
+        __error "$binary - $tag should be installed"
+        return 1
+      end
     end
   else
-    __error "Not installed $binary."
+    __error "$binary should be installed"
+    return 1
   end
 end
 
 echo Started
 
-ghr -r junegunn/fzf-bin -n fzf
-__installed fzf
+__test peco/peco
 
-ghr -r junegunn/fzf-bin -t 0.16.2
-__installed fzf-bin 0.16.2
+__test junegunn/fzf-bin 0.16.0
 
-ghr -r peco/peco
-__installed peco
+__test junegunn/fzf-bin "" fzf
 
-ghr -r stedolan/jq
-__installed jq
+__test stedolan/jq
 
-ghr -r motemen/ghq
-__installed ghq
+__test motemen/ghq
 
 echo Finished in (math (date +%s) - $start)s
 echo -n "$tests tests, "
