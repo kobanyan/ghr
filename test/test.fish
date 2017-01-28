@@ -22,6 +22,8 @@ function __installed -a binary version
   end
 end
 
+echo Started
+
 ghr -r junegunn/fzf-bin -n fzf
 __installed fzf
 
