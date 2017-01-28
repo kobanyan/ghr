@@ -12,11 +12,11 @@ function __error -a message
 end
 
 function __test -a repo tag name skip_at_running_on_travis
-  echo ------
   set tests (math $tests + 1)
   # skip at running on travis
   test -n "$RUN_ON_TRABIS" -a -n "$skip_at_running_on_travis";
     and set skips (math $skips + 1);
+    and echo "Skip installing from $repo; tag: $tag; name: $name"
     and return
   # resolve binary name
   set -l binary $name
