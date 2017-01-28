@@ -3,8 +3,9 @@ before_install:
     - sudo apt-add-repository -y ppa:fish-shell/release-2
     - sudo apt-get update
     - sudo apt-get -y install fish
-script:
+    - fish --version
     - curl -Lo ~/.config/fish/functions/fisher.fish --create-dirs git.io/fisher
     - fish -c "fisher --version"
+script:
     - fish -c "fisher install kobanyan/ghr"
-    - cat test.fish | fish
+    - cat test/test.fish | fish
