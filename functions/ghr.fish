@@ -1,7 +1,7 @@
 function ghr -d "Install form Github releases"
-  function __is_cached -a _repo _tag _name
+  function __is_cached -a repo tag name
     test -f "$GHR_CACHE"; or touch "$GHR_CACHE"
-    if string match -r "^$_repo\t$_tag\t$_name" < "$GHR_CACHE" >/dev/null;
+    if string match -r "^$repo\t$tag\t$name" < "$GHR_CACHE" >/dev/null;
       return 0
     else
       return 1
@@ -10,28 +10,28 @@ function ghr -d "Install form Github releases"
 
   function __os_pattern
     # TODO cover other patterns
-    set -l _os
+    set -l os
     if test (uname) = "Darwin"
-      set _os "(darwin|osx)"
+      set os "(darwin|osx)"
     else
-      set _os "linux"
+      set os "linux"
     end
-    echo ".*$_os.*"
+    echo ".*$os.*"
   end
 
   function __machine_pattern
     # TODO cover other patterns
-    set -l _machine
+    set -l machine
     if test (uname -m) = "x86_64"
-      set _machine "64"
+      set machine "64"
     else
-      set _machine "386"
+      set machine "386"
     end
-    echo ".*$_machine.*"
+    echo ".*$machine.*"
   end
 
-  function __resolve_artifact_endpoint -a _json_file
-    cat "$_json_file"\
+  function __resolve_artifact_endpoint -a json_file
+    cat "$json_file"\
       | string match -r ".*browser_download_url.*"\
       | string match -r (__os_pattern)\
       | string match -r (__machine_pattern)\
@@ -40,29 +40,28 @@ function ghr -d "Install form Github releases"
       | string trim -lr --chars '"'
   end
 
-  function __resolve_real_tag -a _json_file _tag
-    test "$_tag" = "latest";\
-      and echo (cat "$_json_file"\
+  function __resolve_real_tag -a json_file tag
+    test "$tag" = "latest";\
+      and echo (cat "$json_file"\
         | string match -r '".*tag_name.*"'\
         | string trim -lr\
         | string trim --chars '"tag_name": '\
         | string trim -lr --chars '"');
-      or echo "$_tag"
+      or echo "$tag"
   end
 
   # resolve arguments
-  set -l _repo
-  set -l _tag
-  set -l _name
-  set -l _show_help
-  getopts $argv | while read -l _key _value
-    switch $_key
+  set -l repo
+  set -l tag
+  set -l name
+  getopts $argv | while read -l key value
+    switch $key
       case "r" "repo"
-        set _repo "$_value"
+        set repo "$value"
       case "t" "tag"
-        set _tag "$_value"
+        set tag "$value"
       case "n" "name"
-        set _name "$_value"
+        set name "$value"
       case "h" "help"
         echo "Usage: ghr [-r repo] [-t tag] [-n name]"
         echo "Options:"
@@ -72,78 +71,78 @@ function ghr -d "Install form Github releases"
         echo " -t, --tag TAG          Download from TAG"
         return
       case \*
-        echo "'$_key' is not a valid option" > /dev/stderr
+        echo "'$key' is not a valid option" > /dev/stderr
         ghr -h > /dev/stderr
         return 1
     end
   end
-  test -z "$_repo";
+  test -z "$repo";
     and echo "'-r, --repo' is required option" > /dev/stderr;
     and ghr -h > /dev/stderr;
     and return 1
-  test -z "$_name"; and set _name (string split "/" "$_repo")[-1]
-  test -z "$_tag"; and set _tag "latest"
-  test -n "$GHR_TOKEN"; and set -l _api_token "-u ghr:$GHR_TOKEN"
+  test -z "$name"; and set name (string split "/" "$repo")[-1]
+  test -z "$tag"; and set tag "latest"
+  test -n "$GHR_TOKEN"; and set -l api_token "-u ghr:$GHR_TOKEN"
 
   # check if cached when tag is specified
-  test "$_tag" != "latest";
-    and __is_cached "$_repo" "$_tag" "$_name";
+  test "$tag" != "latest";
+    and __is_cached "$repo" "$tag" "$name";
       and return 0
 
   # resolve endpoint
-  set -l _api_endpoint
-  test "$_tag" = "latest";
-    and set _api_endpoint "https://api.github.com/repos/$_repo/releases/latest";
-    or set _api_endpoint "https://api.github.com/repos/$_repo/releases/tags/$_tag"
-  set -l _api_json "$GHR_TEMP/$_repo/$_tag.json"
-  spin -f " @ Downloading $_api_endpoint\r" "curl -sSLo $_api_json $_api_token $_api_endpoint --create-dir";
+  set -l api_endpoint
+  test "$tag" = "latest";
+    and set api_endpoint "https://api.github.com/repos/$repo/releases/latest";
+    or set api_endpoint "https://api.github.com/repos/$repo/releases/tags/$tag"
+  set -l api_json "$GHR_TEMP/$repo/$tag.json"
+  spin -f " @ Downloading $api_endpoint\r" "curl -sSLo $api_json $api_token $api_endpoint --create-dir";
     or return 1
-  set -l _artifact_endpoint (__resolve_artifact_endpoint "$_api_json")
-  test -z "$_artifact_endpoint";
-    and echo "Not found repository. $_repo";
+  set -l artifact_endpoint (__resolve_artifact_endpoint "$api_json")
+  test -z "$artifact_endpoint";
+    and echo "Not found repository. $repo";
     and return 1
 
   # resolve real tag
-  set -l _real_tag (__resolve_real_tag "$_api_json" "$_tag")
+  set -l real_tag (__resolve_real_tag "$api_json" "$tag")
 
   # check if cached
-  __is_cached "$_repo" "$_real_tag" "$_name";
+  __is_cached "$repo" "$real_tag" "$name";
     and return 0
 
   # download artifact
-  set -l _artifact "$GHR_TEMP/"(string split "/" $_artifact_endpoint)[-1]
-  spin -f " @ Downloading $_artifact_endpoint\r" "curl -sSLo $_artifact $_api_token $_artifact_endpoint";
+  set -l artifact "$GHR_TEMP/"(string split "/" $artifact_endpoint)[-1]
+  spin -f " @ Downloading $artifact_endpoint\r" "curl -sSLo $artifact $api_token $artifact_endpoint";
     or return 1
 
   # unarchive
-  set -l _dir_name "$GHR_TEMP/"(string split -m1 "." (string split -r -m1 "/" "$_artifact")[2])[1]
-  set -l _binary
-  if test "$_dir_name" != "$_artifact"
-    rm -rf $_dir_name
-    mkdir -p $_dir_name
-    switch $_artifact
+  set -l dir_name "$GHR_TEMP/"(string split -m1 "." (string split -r -m1 "/" "$artifact")[2])[1]
+  set -l binary
+  if test "$dir_name" != "$artifact"
+    rm -rf $dir_name
+    mkdir -p $dir_name
+    switch $artifact
       case "*.zip"
-        unzip "$_artifact" -d "$_dir_name" >/dev/null
-        rm -rf "$_artifact"
+        unzip "$artifact" -d "$dir_name" >/dev/null
+        rm -rf "$artifact"
       case "*.tar.gz" "*.tgz"
-        tar xvf "$_artifact" -C "$_dir_name" >/dev/null
-        rm -rf "$_artifact"
+        tar xvf "$artifact" -C "$dir_name" >/dev/null
+        rm -rf "$artifact"
     end
     # resolve binary
-    set _binary (file $_dir_name/** | awk -F: '$2 ~ /executable/{print $1}')[1] # use first binary
+    set binary (file $dir_name/** | awk -F: '$2 ~ /executable/{print $1}')[1] # use first binary
   else
     # artifact which does not have extension is binary
-    set _binary "$_artifact"
+    set binary "$artifact"
   end
 
   # enable to exec
-  test -z "$_binary";
-    and echo "Not found binary file in $_dir_name";
+  test -z "$binary";
+    and echo "Not found binary file in $dir_name";
     and return 1
-  mv "$_binary" "$GHR_BIN/$_name"
-  chmod 755 "$GHR_BIN/$_name"
+  mv "$binary" "$GHR_BIN/$name"
+  chmod 755 "$GHR_BIN/$name"
 
   # post process
-  echo $_repo\t$_real_tag\t$_name >> $GHR_CACHE
-  rm -rf "$_dir_name"
+  echo $repo\t$real_tag\t$name >> $GHR_CACHE
+  rm -rf "$dir_name"
 end
