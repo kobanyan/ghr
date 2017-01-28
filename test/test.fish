@@ -1,5 +1,6 @@
 set -g tests 0
 set -g errors 0
+set -g skips 0
 set -g start (date +%s)
 
 function __error -a message
@@ -10,15 +11,12 @@ function __error -a message
   set errors (math $errors + 1)
 end
 
-function __shoud_not_be_installed -a binary
-end
-
-function __should_be_installed -a binary tag
-end
-
 function __test -a repo tag name
   echo ------
   set tests (math $tests + 1)
+  test -n "$RUN_ON_TRABIS";
+    and set skips (math $skips + 1);
+    and return
   set -l binary $name
   test -z "$binary"; and set binary (string split "/" $repo)[-1]
   if type $binary >/dev/null 2>&1;
@@ -60,8 +58,9 @@ echo -n "$tests tests, "
 test $errors = 0;
   and set_color green;
   or set_color red;
-echo -n "$errors errors"
+echo -n "$errors errors, "
 set_color normal
+echo -n "$skips skips"
 echo ""
 
 exit $errors
