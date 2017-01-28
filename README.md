@@ -4,9 +4,19 @@
 
 A fish shell to install a binary from GitHub releases
 
+## Install
+
+With [fisherman](https://github.com/fisherman/fisherman)
+
+```fish
+fisher install kobanyan/ghr
+```
+
 ## Synopsis
 
-`ghr <repo> [-t tag] [-n name]`
+```fish
+ghr <repo> [-t tag] [-n name]
+```
 
 ## Options
 
@@ -20,12 +30,26 @@ A fish shell to install a binary from GitHub releases
 
 ### Install latest version  
 
-`ghr peco/peco`
+```fish
+ghr peco/peco
+```
 
 ### Install as alias  
 
-`ghr junegunn/fzf-bin -n fzf`
+```fish
+ghr junegunn/fzf-bin -n fzf
+```
 
 ### Install from specified tag  
 
-`ghr stedolan/jq -t jq-1.5rc2`
+```fish
+ghr stedolan/jq -t jq-1.5rc2
+```
+
+## License
+
+MIT
+
+## Author Information
+
+[kobanyan](https://github.com/kobanyan)
