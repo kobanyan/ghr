@@ -64,8 +64,9 @@ test $errors = 0;
   and set_color green;
   or set_color red;
 echo -n "$errors errors, "
-set_color normal
+set_color yellow
 echo -n "$skips skips"
+set_color normal
 echo ""
 
 exit $errors
