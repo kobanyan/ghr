@@ -11,10 +11,10 @@ A fish shell to install a binary from GitHub releases
 ## Options
 
 |||
-|-|-|
-|-h, --help|Show usage help|
-|-n, --name NAME|Save binary as NAME|
-|-t, --tag TAG|Download from TAG|
+| --- | --- |
+| -h, --help | Show usage help |
+| -n, --name NAME | Save binary as NAME |
+| -t, --tag TAG | Download from TAG |
 
 ## Usage
 
