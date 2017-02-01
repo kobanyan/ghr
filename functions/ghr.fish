@@ -25,7 +25,7 @@ function ghr -d "Install form Github releases"
     if test (uname -m) = "x86_64"
       set machine "64"
     else
-      set machine "386"
+      set machine "(386|32)"
     end
     echo ".*$machine.*"
   end
