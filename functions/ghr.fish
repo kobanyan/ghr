@@ -88,7 +88,7 @@ function ghr -d "Install form Github releases"
     and return 1
   test -z "$name"; and set name (string split "/" "$repo")[-1]
   test -z "$tag"; and set tag "latest"
-  test -n "$GHR_TOKEN"; and set -l api_token "-u ghr:$GHR_TOKEN"
+  test -n "$GHR_TOKEN"; and set -l api_token "-H \"Authorization: token $GHR_TOKEN\""
 
   # check if cached when tag is specified
   test "$tag" != "latest";
@@ -117,7 +117,7 @@ function ghr -d "Install form Github releases"
 
   # download artifact
   set -l artifact "$GHR_TEMP/"(string split "/" $artifact_endpoint)[-1]
-  spin -f " @ Downloading $artifact_endpoint\r" "curl -sSLo $artifact $api_token $artifact_endpoint";
+  spin -f " @ Downloading $artifact_endpoint\r" "curl -sSLo $artifact $artifact_endpoint";
     or return 1
 
   # unarchive
