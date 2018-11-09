@@ -19,10 +19,12 @@ function ghr -d "Install form Github releases"
     echo ".*$os.*"
   end
 
-  function __machine_pattern
+  function __machine_pattern -a without_machine
     # TODO cover other patterns
     set -l machine
-    if test (uname -m) = "x86_64"
+    if test $without_machine = 1
+      set machine ""
+    else if test (uname -m) = "x86_64"
       set machine "64"
     else
       set machine "(386|32)"
@@ -30,11 +32,11 @@ function ghr -d "Install form Github releases"
     echo ".*$machine.*"
   end
 
-  function __resolve_artifact_endpoint -a json_file
+  function __resolve_artifact_endpoint -a json_file without_machine
     cat "$json_file"\
       | string match -r ".*browser_download_url.*"\
       | string match -r (__os_pattern)\
-      | string match -r (__machine_pattern)\
+      | string match -r (__machine_pattern $without_machine)\
       | string trim -lr\
       | string trim --chars '"browser_download_url": '\
       | string trim -lr --chars '"'
@@ -103,9 +105,12 @@ function ghr -d "Install form Github releases"
   set -l api_json "$GHR_TEMP/$repo/$tag.json"
   spin -f " @ Downloading $api_endpoint\r" "curl -sSLo $api_json $api_token $api_endpoint --create-dir";
     or return 1
-  set -l artifact_endpoint (__resolve_artifact_endpoint "$api_json")
+  set -l artifact_endpoint (__resolve_artifact_endpoint "$api_json" 0)
   test -z "$artifact_endpoint";
-    and echo "Not found repository. $repo";
+    # re-resolve when an artifact does not have machine
+    and set -l artifact_endpoint (__resolve_artifact_endpoint "$api_json" 1)
+  test -z "$artifact_endpoint";
+    and echo "Suitable artifact not found. $repo";
     and return 1
 
   # resolve real tag

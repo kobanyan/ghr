@@ -58,6 +58,8 @@ __test stedolan/jq "" "" true
 
 __test motemen/ghq
 
+__test antonmedv/fx
+
 echo Finished in (math (date +%s) - $start)s
 echo -n "$tests tests, "
 test $errors = 0;
