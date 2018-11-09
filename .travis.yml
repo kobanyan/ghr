@@ -7,5 +7,5 @@ before_install:
     - curl -Lo ~/.config/fish/functions/fisher.fish --create-dirs git.io/fisher
     - fish -c "fisher --version"
 script:
-    - fish -c "fisher install kobanyan/ghr"
+    - fish -c "fisher add kobanyan/ghr@$TRAVIS_BRANCH"
     - cat test/test.fish | fish
