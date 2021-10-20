@@ -1,11 +1,11 @@
 sudo: required
 before_install:
-    - sudo apt-add-repository -y ppa:fish-shell/release-2
+    - sudo apt-add-repository -y ppa:fish-shell/release-3
     - sudo apt-get update
     - sudo apt-get -y install fish
     - fish --version
-    - curl -Lo ~/.config/fish/functions/fisher.fish --create-dirs git.io/fisher
+    - fish -c "curl -sL https://git.io/fisher | source && fisher install jorgebucaran/fisher"
     - fish -c "fisher --version"
 script:
-    - fish -c "fisher add kobanyan/ghr@$TRAVIS_BRANCH"
+    - fish -c "fisher install jorgebucaran/getopts.fish americanhanko/fish-spin kobanyan/ghr"
     - cat test/test.fish | fish

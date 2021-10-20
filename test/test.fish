@@ -1,3 +1,4 @@
+set -U XDG_CACHE_HOME $HOME/.cache
 set -g tests 0
 set -g errors 0
 set -g skips 0
