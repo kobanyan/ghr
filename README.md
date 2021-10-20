@@ -9,7 +9,7 @@ A fish shell to install a binary from GitHub releases
 With [fisherman](https://github.com/fisherman/fisherman)
 
 ```fish
-fisher install kobanyan/ghr
+fisher install jorgebucaran/getopts.fish americanhanko/fish-spin kobanyan/ghr
 ```
 
 ## Synopsis
